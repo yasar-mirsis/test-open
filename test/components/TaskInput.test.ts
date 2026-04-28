@@ -832,7 +832,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAddThrowing} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type a valid task
       fireEvent.change(input, { target: { value: 'Test task' } });
@@ -858,7 +858,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type a valid task
       fireEvent.change(input, { target: { value: 'Test task' } });
@@ -896,7 +896,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAddThrowing} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type a valid task
       fireEvent.change(input, { target: { value: 'Test task' } });
@@ -918,7 +918,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAddThrowing} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type a valid task
       fireEvent.change(input, { target: { value: 'Test task' } });
@@ -944,7 +944,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type a valid task
       fireEvent.change(input, { target: { value: 'Test task' } });
@@ -973,65 +973,6 @@ describe('TaskInput', () => {
       const input = screen.getByLabelText(/new task input/i);
       expect(input).toBeInTheDocument();
     });
-
-    test('should render Add button', () => {
-      render(<TaskInput onAdd={mockOnAdd} />);
-
-      const button = screen.getByLabelText(/add task/i);
-      expect(button).toBeInTheDocument();
-      expect(button).toHaveTextContent('Add');
-    });
-
-    test('should not render error message initially', () => {
-      render(<TaskInput onAdd={mockOnAdd} />);
-
-      const error = screen.queryByText(/please enter a task name/i);
-      expect(error).not.toBeInTheDocument();
-    });
-
-    test('should render error message when error state is present', () => {
-      render(<TaskInput onAdd={mockOnAdd} />);
-
-      const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
-
-      // Type empty input and click Add to show error
-      fireEvent.change(input, { target: { value: '' } });
-      fireEvent.click(addButton);
-
-      const error = screen.getByText(/please enter a task name/i);
-      expect(error).toBeInTheDocument();
-    });
-
-    test('should have correct className on input', () => {
-      render(<TaskInput onAdd={mockOnAdd} />);
-
-      const input = screen.getByLabelText(/new task input/i);
-      expect(input).toHaveClass('task-input');
-    });
-
-    test('should have correct className on Add button', () => {
-      render(<TaskInput onAdd={mockOnAdd} />);
-
-      const button = screen.getByLabelText(/add task/i);
-      expect(button).toHaveClass('task-add-button');
-    });
-
-    test('should have correct className on error message', () => {
-      render(<TaskInput onAdd={mockOnAdd} />);
-
-      const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
-
-      // Type empty input and click Add to show error
-      fireEvent.change(input, { target: { value: '' } });
-      fireEvent.click(addButton);
-
-      const error = screen.getByText(/please enter a task name/i);
-      expect(error).toHaveClass('task-input-error');
-    });
-  });
-});
 
     test('should render Add button', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
