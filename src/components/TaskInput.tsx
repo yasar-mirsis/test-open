@@ -42,10 +42,13 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAdd }) => {
     setError('');
 
     // Call the callback with the trimmed text
-    onAdd(trimmedText);
-
-    // Clear the input after successful submission
-    setInputValue('');
+    try {
+      onAdd(trimmedText);
+      // Clear the input after successful submission
+      setInputValue('');
+    } catch (error) {
+      setError('Failed to add task. Please try again.');
+    }
   };
 
   /**

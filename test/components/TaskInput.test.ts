@@ -669,7 +669,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type very long text
       const longText = 'A'.repeat(10000);
@@ -685,7 +685,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type text with newlines
       fireEvent.change(input, { target: { value: '\n\nTest task\n\n' } });
@@ -700,7 +700,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type text with mixed whitespace
       fireEvent.change(input, { target: { value: '  Test \t task  \n  ' } });
@@ -715,7 +715,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Rapidly type and submit multiple times
       fireEvent.change(input, { target: { value: 'Task' } });
@@ -755,7 +755,7 @@ describe('TaskInput', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
 
       const input = screen.getByLabelText(/new task input/i);
-      const addButton = screen.getByLabelText(/add task/i');
+      const addButton = screen.getByLabelText(/add task/i);
 
       // Type and submit
       fireEvent.change(input, { target: { value: 'Task 1' } });
@@ -776,6 +776,196 @@ describe('TaskInput', () => {
     });
   });
 
+  describe('Error Handling - onAdd Callback', () => {
+    test('should display error message when onAdd throws an error', () => {
+      // Create a mock that throws an error
+      const mockOnAddThrowing = jest.fn(() => {
+        throw new Error('Failed to add task');
+      });
+
+      render(<TaskInput onAdd={mockOnAddThrowing} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i);
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Click Add button
+      fireEvent.click(addButton);
+
+      // Verify error message is displayed
+      expect(screen.getByText(/failed to add task/i)).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent('Failed to add task. Please try again.');
+    });
+
+    test('should NOT clear input when onAdd throws an error', () => {
+      // Create a mock that throws an error
+      const mockOnAddThrowing = jest.fn(() => {
+        throw new Error('Failed to add task');
+      });
+
+      render(<TaskInput onAdd={mockOnAddThrowing} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i);
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Verify input has value before submission
+      expect(input).toHaveValue('Test task');
+
+      // Click Add button
+      fireEvent.click(addButton);
+
+      // Verify input is NOT cleared after error
+      expect(input).toHaveValue('Test task');
+    });
+
+    test('should call onAdd callback even when it throws an error', () => {
+      // Create a mock that throws an error
+      const mockOnAddThrowing = jest.fn(() => {
+        throw new Error('Failed to add task');
+      });
+
+      render(<TaskInput onAdd={mockOnAddThrowing} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Click Add button
+      fireEvent.click(addButton);
+
+      // Verify onAdd was called
+      expect(mockOnAddThrowing).toHaveBeenCalledTimes(1);
+      expect(mockOnAddThrowing).toHaveBeenCalledWith('Test task');
+    });
+
+    test('should allow user to retry and successfully add a task after error', () => {
+      // Create a mock that initially throws an error, then succeeds
+      const mockOnAdd = jest.fn()
+        .mockImplementationOnce(() => {
+          throw new Error('Failed to add task');
+        })
+        .mockImplementationOnce(() => {
+          // Second call succeeds
+        });
+
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Click Add button - first attempt fails
+      fireEvent.click(addButton);
+
+      // Verify error is displayed
+      expect(screen.getByText(/failed to add task/i)).toBeInTheDocument();
+
+      // Verify input still has value
+      expect(input).toHaveValue('Test task');
+
+      // Modify the input to make it different
+      fireEvent.change(input, { target: { value: 'New task' } });
+
+      // Click Add button again - second attempt succeeds
+      fireEvent.click(addButton);
+
+      // Verify no error is displayed
+      expect(screen.queryByText(/failed to add task/i)).not.toBeInTheDocument();
+
+      // Verify onAdd was called twice
+      expect(mockOnAdd).toHaveBeenCalledTimes(2);
+      expect(mockOnAdd).toHaveBeenNthCalledWith(1, 'Test task');
+      expect(mockOnAdd).toHaveBeenNthCalledWith(2, 'New task');
+    });
+
+    test('should handle different error messages from onAdd callback', () => {
+      // Create a mock that throws different errors
+      const mockOnAddThrowing = jest.fn(() => {
+        throw new Error('Network error');
+      });
+
+      render(<TaskInput onAdd={mockOnAddThrowing} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Click Add button
+      fireEvent.click(addButton);
+
+      // Verify the error message is generic (not the original error message)
+      expect(screen.getByText(/failed to add task/i)).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent('Failed to add task. Please try again.');
+    });
+
+    test('should handle TypeError from onAdd callback', () => {
+      // Create a mock that throws a TypeError
+      const mockOnAddThrowing = jest.fn(() => {
+        throw new TypeError('Invalid task text');
+      });
+
+      render(<TaskInput onAdd={mockOnAddThrowing} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Click Add button
+      fireEvent.click(addButton);
+
+      // Verify error message is displayed (generic error handling)
+      expect(screen.getByText(/failed to add task/i)).toBeInTheDocument();
+      expect(mockOnAddThrowing).toHaveBeenCalledTimes(1);
+    });
+
+    test('should clear error message after successful retry', () => {
+      // Create a mock that initially throws an error, then succeeds
+      const mockOnAdd = jest.fn()
+        .mockImplementationOnce(() => {
+          throw new Error('Failed to add task');
+        })
+        .mockImplementationOnce(() => {
+          // Second call succeeds
+        });
+
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type a valid task
+      fireEvent.change(input, { target: { value: 'Test task' } });
+
+      // Click Add button - first attempt fails
+      fireEvent.click(addButton);
+
+      // Verify error is displayed
+      expect(screen.getByText(/failed to add task/i)).toBeInTheDocument();
+
+      // Modify the input to make it different
+      fireEvent.change(input, { target: { value: 'New task' } });
+
+      // Click Add button again - second attempt succeeds
+      fireEvent.click(addButton);
+
+      // Verify error is cleared
+      expect(screen.queryByText(/failed to add task/i)).not.toBeInTheDocument();
+    });
+  });
+
   describe('Component Rendering', () => {
     test('should render input field', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
@@ -783,6 +973,65 @@ describe('TaskInput', () => {
       const input = screen.getByLabelText(/new task input/i);
       expect(input).toBeInTheDocument();
     });
+
+    test('should render Add button', () => {
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const button = screen.getByLabelText(/add task/i);
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveTextContent('Add');
+    });
+
+    test('should not render error message initially', () => {
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const error = screen.queryByText(/please enter a task name/i);
+      expect(error).not.toBeInTheDocument();
+    });
+
+    test('should render error message when error state is present', () => {
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type empty input and click Add to show error
+      fireEvent.change(input, { target: { value: '' } });
+      fireEvent.click(addButton);
+
+      const error = screen.getByText(/please enter a task name/i);
+      expect(error).toBeInTheDocument();
+    });
+
+    test('should have correct className on input', () => {
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      expect(input).toHaveClass('task-input');
+    });
+
+    test('should have correct className on Add button', () => {
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const button = screen.getByLabelText(/add task/i);
+      expect(button).toHaveClass('task-add-button');
+    });
+
+    test('should have correct className on error message', () => {
+      render(<TaskInput onAdd={mockOnAdd} />);
+
+      const input = screen.getByLabelText(/new task input/i);
+      const addButton = screen.getByLabelText(/add task/i');
+
+      // Type empty input and click Add to show error
+      fireEvent.change(input, { target: { value: '' } });
+      fireEvent.click(addButton);
+
+      const error = screen.getByText(/please enter a task name/i);
+      expect(error).toHaveClass('task-input-error');
+    });
+  });
+});
 
     test('should render Add button', () => {
       render(<TaskInput onAdd={mockOnAdd} />);
